@@ -1,0 +1,45 @@
+#coding=utf-8#
+import KNN.kNN as KNN
+from numpy import *
+import matplotlib
+import matplotlib.pyplot as plt
+from numpy import *
+import operator
+from os import listdir
+
+#K-means单元测试#
+datingDataMat,datingLabels = KNN.file2matrix('./KNN/datingTestSet2.txt')
+
+
+#h绘图查看
+fig = plt.figure()
+ax = fig.add_subplot(111)
+#datingDataMat,datingLabels = KNN.file2matrix('datingTestSet.txt')
+#ax.scatter(datingDataMat[:,1], datingDataMat[:,2])
+ax.scatter(datingDataMat[:,1], datingDataMat[:,2], 15.0*array(datingLabels), 15.0*array(datingLabels))
+ax.axis([-2,25,-0.2,2.0])
+plt.xlabel('Percentage of Time Spent Playing Video Games')
+plt.ylabel('Liters of Ice Cream Consumed Per Week')
+plt.show()
+
+#归一测试
+norMat,ranges,minvals = KNN.autoNorm(datingDataMat)
+print norMat
+
+#单元测试
+KNN.datingClassTest()
+
+#标准调用流程
+#1.分类
+dataSet = array([[1.0,1.1],[1.0,1.0],[0,0],[0,0.1]])
+labels = ['A','A','B','B']
+classifierResult = KNN.classify0([1.0,2.0],dataSet,labels,3)
+print classifierResult
+#2.数据归一化
+norMat,ranges,minvals = KNN.autoNorm(dataSet)
+print norMat
+#3.数据集合测试
+hoRatio = 0.4
+datingDataMat = array([[1.0,1.1],[1.0,1.0],[2.0,3.0],[2.0,0.1],[1.0,1.1],[1.0,1.0],[2.0,3.0],[2.0,0.1]])
+datingLabels = ['A','A','B','B','A','A','B','B']
+KNN.ClassifyTest(hoRatio,datingDataMat,datingLabels)
