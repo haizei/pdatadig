@@ -1,5 +1,8 @@
 #coding=utf-8#
 import KNN.kNN as KNN
+import DecisionTree.trees as trees
+import DecisionTree.treePlotter as treePlotter
+import Bayes.bayes as bayes
 from numpy import *
 import matplotlib
 import matplotlib.pyplot as plt
@@ -7,10 +10,13 @@ from numpy import *
 import operator
 from os import listdir
 
+#################
+###K-means
+#################
+
+'''
 #K-means单元测试#
 datingDataMat,datingLabels = KNN.file2matrix('./KNN/datingTestSet2.txt')
-
-
 #h绘图查看
 fig = plt.figure()
 ax = fig.add_subplot(111)
@@ -21,14 +27,11 @@ ax.axis([-2,25,-0.2,2.0])
 plt.xlabel('Percentage of Time Spent Playing Video Games')
 plt.ylabel('Liters of Ice Cream Consumed Per Week')
 plt.show()
-
 #归一测试
 norMat,ranges,minvals = KNN.autoNorm(datingDataMat)
 print norMat
-
 #单元测试
 KNN.datingClassTest()
-
 #标准调用流程
 #1.分类
 dataSet = array([[1.0,1.1],[1.0,1.0],[0,0],[0,0.1]])
@@ -43,3 +46,81 @@ hoRatio = 0.4
 datingDataMat = array([[1.0,1.1],[1.0,1.0],[2.0,3.0],[2.0,0.1],[1.0,1.1],[1.0,1.0],[2.0,3.0],[2.0,0.1]])
 datingLabels = ['A','A','B','B','A','A','B','B']
 KNN.ClassifyTest(hoRatio,datingDataMat,datingLabels)
+'''
+
+
+#################
+###决策树
+#################
+
+#1统计熵
+'''
+myDat,labels = trees.createDataSet()
+print myDat
+print labels
+#print trees.calcShannonEnt(myDat) #计算熵值
+dataSet = [[1, 1, 'maybe'],[1, 1, 'yes'],[1, 1, 'yes'],[1, 0, 'no'],[0, 1, 'no'],[0, 1, 'no']]
+#print trees.calcShannonEnt(dataSet) #添加分类标签
+#2划分数据集
+#print trees.splitDataSet(dataSet,0,0)
+#print trees.splitDataSet(dataSet,0,1)
+#3测试并选择最好的数据集
+#print myDat
+#print trees.chooseBestFeatureToSplit(myDat)
+#4递归构建决策树
+myTree = trees.createTree(myDat,labels)
+print myTree
+'''
+
+#2.绘制图形
+'''
+myDat,labels = trees.createDataSet()
+myTree = trees.createTree(myDat,labels)
+treePlotter.createPlot(myTree)
+'''
+
+#################
+###朴素贝叶斯
+#################
+
+'''
+listOPosts,listClasses = bayes.loadDataSet()
+myVocablist = bayes.createVocabList(listOPosts)
+print myVocablist
+print bayes.setOfWords2Vec(myVocablist,listOPosts[0])
+print bayes.setOfWords2Vec(myVocablist,listOPosts[3])
+
+#构建计算概率矩阵#
+trainMat = []
+for postinDoc in listOPosts:
+    trainMat.append(bayes.setOfWords2Vec(myVocablist,postinDoc))
+p0V,p1V,pAb = bayes.trainNB0(trainMat,listClasses)
+
+#测试算法分类器 基于前面已经计算了p0v,p1v,pab#
+testEntry = ['love', 'my', 'dalmation']
+#计算需要测试分类的概率矩阵向量
+thisDoc = array(bayes.setOfWords2Vec(myVocablist, testEntry))
+#利用原先样本集的计算制表
+print testEntry,'classified as: ',bayes.classifyNB(thisDoc,p0V,p1V,pAb)
+
+#获取到数据#
+docList=[]; classList = []; fullText =[]
+for i in range(1,3):
+    wordList = bayes.textParse(open('Bayes/email/spam/%d.txt' % i).read())
+    docList.append(wordList)
+    fullText.extend(wordList)
+    classList.append(1)
+    print 'classList:',classList
+
+#获取到测试数据集合选取顺序#
+trainingSet = range(50); testSet=[]           #create test set
+for i in range(10):
+    randIndex = int(random.uniform(0,len(trainingSet)))
+    print randIndex
+    testSet.append(trainingSet[randIndex])
+    print testSet
+    del(trainingSet[randIndex])
+'''
+
+
+
