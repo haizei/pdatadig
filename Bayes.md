@@ -264,8 +264,86 @@ def spamTest():
 ```
 
 ###一个经典的案例:贝叶斯分类器从个人广告中获取区域倾向
+从两个城市选取一些人,通过分析这些人发布的征婚广告,比较人们在广告用词上是否不同,他们各自常用的词有哪些,对于不同城市的人关心的内容有什么不同?
+
+1. 收集数据:提供文本文件
+2. 准备数据:将文本解析成词向量
+3. 分析数据:检查词条确保解析的正确性
+4. 训练算法，利用我们之前建立的trainNBO()函数
+5. 测试算法，利用classfiNB(),构建测试函数测试数据的准确性
+6. 使用算法，对数据进行分类，并将数据输出到屏幕上
 
 
+遍历词汇表中的每个词统计它在文本中出现的次数,然后从高到低进行排序,返回排序最高的100单词
+
+```
+def calcMostFreq(vocabList,fullText):
+    import operator
+    freqDict = {}
+    for token in vocabList:
+        freqDict[token]=fullText.count(token)
+    sortedFreq = sorted(freqDict.iteritems(), key=operator.itemgetter(1), reverse=True) 
+    return sortedFreq[:30]   
+```
+
+获取到A城市的发表评论,获取到B城市的发表评论,建立贝叶斯分类规则,抽取样本数据分析里面的内容是属于A城市的,还是B城市的.
+这里的差异点是:将排名前100的高频词去除,排除在数据之外.
+
+```
+def localWords(feed1,feed0):
+    import feedparser
+    docList=[]; classList = []; fullText =[]
+    minLen = min(len(feed1['entries']),len(feed0['entries']))
+    for i in range(minLen):
+        wordList = textParse(feed1['entries'][i]['summary'])
+        docList.append(wordList)
+        fullText.extend(wordList)
+        classList.append(1) #NY is class 1
+        wordList = textParse(feed0['entries'][i]['summary'])
+        docList.append(wordList)
+        fullText.extend(wordList)
+        classList.append(0)
+    vocabList = createVocabList(docList)#create vocabulary
+    top30Words = calcMostFreq(vocabList,fullText)   #remove top 30 words
+    for pairW in top30Words:
+        if pairW[0] in vocabList: vocabList.remove(pairW[0])
+    trainingSet = range(2*minLen); testSet=[]           #create test set
+    for i in range(20):
+        randIndex = int(random.uniform(0,len(trainingSet)))
+        testSet.append(trainingSet[randIndex])
+        del(trainingSet[randIndex])  
+    trainMat=[]; trainClasses = []
+    for docIndex in trainingSet:#train the classifier (get probs) trainNB0
+        trainMat.append(bagOfWords2VecMN(vocabList, docList[docIndex]))
+        trainClasses.append(classList[docIndex])
+    p0V,p1V,pSpam = trainNB0(array(trainMat),array(trainClasses))
+    errorCount = 0
+    for docIndex in testSet:        #classify the remaining items
+        wordVector = bagOfWords2VecMN(vocabList, docList[docIndex])
+        if classifyNB(array(wordVector),p0V,p1V,pSpam) != classList[docIndex]:
+            errorCount += 1
+    print 'the error rate is: ',float(errorCount)/len(testSet)
+    return vocabList,p0V,p1V
+```
+
+对在不同单词里面的使用概率进行逆向排序得出单词的使用频次
+```
+def getTopWords(ny,sf):
+    import operator
+    vocabList,p0V,p1V=localWords(ny,sf)
+    topNY=[]; topSF=[]
+    for i in range(len(p0V)):
+        if p0V[i] > -6.0 : topSF.append((vocabList[i],p0V[i]))
+        if p1V[i] > -6.0 : topNY.append((vocabList[i],p1V[i]))
+    sortedSF = sorted(topSF, key=lambda pair: pair[1], reverse=True)
+    print "SF**SF**SF**SF**SF**SF**SF**SF**SF**SF**SF**SF**SF**SF**SF**SF**"
+    for item in sortedSF:
+        print item[0]
+    sortedNY = sorted(topNY, key=lambda pair: pair[1], reverse=True)
+    print "NY**NY**NY**NY**NY**NY**NY**NY**NY**NY**NY**NY**NY**NY**NY**NY**"
+    for item in sortedNY:
+        print item[0]
+```
 
 
 

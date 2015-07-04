@@ -3,6 +3,7 @@ import KNN.kNN as KNN
 import DecisionTree.trees as trees
 import DecisionTree.treePlotter as treePlotter
 import Bayes.bayes as bayes
+import logistic.logRegres as logRegres
 from numpy import *
 import matplotlib
 import matplotlib.pyplot as plt
@@ -122,5 +123,18 @@ for i in range(10):
     del(trainingSet[randIndex])
 '''
 
+##################
+###Logistic回归算法
+##################
 
+#1.获取基础数据集合#
+dataMat,labelMat = logRegres.loadDataSet()
+print labelMat
+
+#2.回归梯度计算算法#
+weights = logRegres.gradAscent(dataMat,labelMat)
+print weights
+
+#3.绘制决策边界
+logRegres.plotBestFit(weights)
 
