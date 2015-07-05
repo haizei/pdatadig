@@ -4,6 +4,8 @@ import DecisionTree.trees as trees
 import DecisionTree.treePlotter as treePlotter
 import Bayes.bayes as bayes
 import logistic.logRegres as logRegres
+import adaboost.adaboost as adaboost
+import SVM.svmMLiA as svmMLiA
 from numpy import *
 import matplotlib
 import matplotlib.pyplot as plt
@@ -126,7 +128,7 @@ for i in range(10):
 ##################
 ###Logistic回归算法
 ##################
-
+'''
 #1.获取基础数据集合#
 dataMat,labelMat = logRegres.loadDataSet()
 print labelMat
@@ -137,4 +139,58 @@ print weights
 
 #3.绘制决策边界
 logRegres.plotBestFit(weights)
+'''
+
+##################
+###SVM
+##################
+
+'''
+#1.获取基础数据集合#
+dataMat,labelMat = svmMLiA.loadDataSet('testSet.txt')
+
+#2.小函数
+svmMLiA.selectJrand(1,10)
+
+#3.运行SMO算法
+b,alphas = svmMLiA.smoSimple(dataMat,labelMat,0.6,0.001,40)
+print b
+print alphas
+'''
+
+##################
+###adaboost算法
+##################
+
+dataArr,classLabels = adaboost.loadSimpData()
+
+
+dataMatrix = mat(dataArr); labelMat = mat(classLabels).T
+
+m,n = shape(dataMatrix)
+D= mat((ones((5,1)))/5)
+
+numSteps = 10.0; bestStump = {}; bestClasEst = mat(zeros((m,1)))
+
+print bestClasEst
+
+minError = inf #init error sum, to +infinity
+for i in range(n):#loop over all dimensions
+    rangeMin = dataMatrix[:,i].min(); rangeMax = dataMatrix[:,i].max();
+    
+    stepSize = (rangeMax-rangeMin)/numSteps
+    for j in range(-1,int(numSteps)+1):#loop over all range in current dimension
+        for inequal in ['lt', 'gt']: #go over less than and greater than
+            threshVal = (rangeMin + float(j) * stepSize)
+            predictedVals = adaboost.stumpClassify(dataMatrix,i,threshVal,inequal)#call stump classify with i, j, lessThan
+            errArr = mat(ones((m,1)))
+            errArr[predictedVals == labelMat] = 0
+            weightedError = D.T*errArr  #calc total error multiplied by D
+            #print "split: dim %d, thresh %.2f, thresh ineqal: %s, the weighted error is %.3f" % (i, threshVal, inequal, weightedError)
+            if weightedError < minError:
+                minError = weightedError
+                bestClasEst = predictedVals.copy()
+                bestStump['dim'] = i
+                bestStump['thresh'] = threshVal
+                bestStump['ineq'] = inequal
 
